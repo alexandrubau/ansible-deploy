@@ -1,7 +1,3 @@
 ---
-deploy_ssh_key: ~ # /vagrant/automation/resources/private/id_rsa
-# deploy_git_repo: ~ # git@github.com:user/project.git
+deploy_ssh_key: ~
 deploy_version: master
-# deploy_dest: ~ # /var/www/project
-# deploy_hook: ~ # /vagrant/automation/resources/hooks/deploy.yml
-# deploy_composer_path: ~ # /vagrant/composer.json
