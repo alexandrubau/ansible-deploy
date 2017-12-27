@@ -1,2 +1,4 @@
 ---
+- name: php
+  src: https://github.com/alexandrubau/ansible-php.git
     
