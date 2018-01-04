@@ -45,3 +45,10 @@ Example:
 ```yaml
 deploy_composer_path: /vagrant/composer.json
 ```
+
+**deploy_npm_path** (type `string`, default `undefined`)
+
+Example:
+```yaml
+deploy_npm_path: /vagrant/package.json
+```

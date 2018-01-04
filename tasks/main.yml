@@ -28,6 +28,11 @@
     working_dir: "{{ deploy_composer_path | dirname }}"
   when: deploy_composer_path is defined
 
+- name: Install npm packages
+  npm:
+    path: "{{ deploy_npm_path | dirname }}"
+  when: deploy_npm_path is defined
+
 - name: Include deploy hook
   include_tasks: "{{ deploy_hook }}"
   when: deploy_hook is defined

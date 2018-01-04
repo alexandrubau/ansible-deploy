@@ -1,4 +1,6 @@
 ---
 - name: php
   src: https://github.com/alexandrubau/ansible-php.git
+- name: nodejs
+  src: https://github.com/alexandrubau/ansible-nodejs.git
     
