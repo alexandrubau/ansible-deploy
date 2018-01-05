@@ -4,14 +4,14 @@ Some description for Deploy role would be nice. Any volunteers?
 
 ### Parameters
 
-**deploy_ssh_key** (type `string`, default `undefined`)
+**deploy_ssh_key** (type `string`, default `null`)
 
 Example:
 ```yaml
 deploy_ssh_key: /vagrant/automation/resources/private/id_rsa
 ```
 
-**deploy_git_repo** (type `string`, default `null`)
+**deploy_git_repo** (type `string`, default `undefined`)
 
 Example:
 ```yaml
