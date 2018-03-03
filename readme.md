@@ -46,9 +46,22 @@ Example:
 deploy_composer_path: /vagrant/composer.json
 ```
 
+**deploy_composer_packages_path** (type `string`, default `{{ deploy_dest }}/vendor`)
+
+Example:
+```yaml
+deploy_composer_packages_path: /vagrant/vendor
+```
+
 **deploy_npm_path** (type `string`, default `undefined`)
 
 Example:
 ```yaml
 deploy_npm_path: /vagrant/package.json
 ```
+
+**deploy_npm_packages_path** (type `string`, default `{{ deploy_dest }}/node_modules`)
+
+Example:
+```yaml
+deploy_npm_packages_path: /vagrant/node_modules

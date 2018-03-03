@@ -1,4 +1,6 @@
 ---
 deploy_ssh_key: ~
 deploy_version: master
+deploy_composer_packages_path: "{{ deploy_dest }}/vendor"
+deploy_npm_packages_path: "{{ deploy_dest }}/node_modules"
 deploy_env: dev
