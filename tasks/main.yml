@@ -27,11 +27,13 @@
     command: install
     working_dir: "{{ deploy_composer_path | dirname }}"
     no_dev: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
+  become: no
   when: deploy_composer_path is defined
 
 - name: Install npm packages
   npm:
     path: "{{ deploy_npm_path | dirname }}"
+  become: no
   when: deploy_npm_path is defined
 
 - name: Include deploy hook
