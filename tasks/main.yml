@@ -22,12 +22,18 @@
     scope: local
     repo: "{{ deploy_dest }}"
 
+- name: Check if composer packages directory exists
+  stat:
+    path: "{{ deploy_composer_packages_path }}"
+  register: _deploy_composer_packages_path_info
+  when: deploy_composer_path is defined
+
 - name: Create composer packages directory
   file:
     path: "{{ deploy_composer_packages_path }}"
     state: directory
     mode: 0777
-  when: deploy_composer_path is defined
+  when: deploy_composer_path is defined and not _deploy_composer_packages_path_info.stat.exists
 
 - name: Install composer packages
   composer:
@@ -37,12 +43,18 @@
   become: no
   when: deploy_composer_path is defined
 
+- name: Check if npm packages directory exists
+  stat:
+    path: "{{ deploy_npm_packages_path }}"
+  register: _deploy_npm_packages_path_info
+  when: deploy_npm_path is defined
+
 - name: Create npm packages directory
   file:
     path: "{{ deploy_npm_packages_path }}"
     state: directory
     mode: 0777
-  when: deploy_composer_path is defined
+  when: deploy_npm_path is defined and not _deploy_npm_packages_path_info.stat.exists
 
 - name: Install npm packages
   npm:
