@@ -1,4 +1,8 @@
 ---
+- name: Include deploy start hook
+  include_tasks: "{{ deploy_start_hook }}"
+  when: deploy_start_hook is defined
+
 - name: Install packages
   apt:
     name: "{{ item }}"
@@ -62,6 +66,6 @@
   become: no
   when: deploy_npm_path is defined and not _deploy_npm_packages_path_info.stat.exists
 
-- name: Include deploy hook
-  include_tasks: "{{ deploy_hook }}"
-  when: deploy_hook is defined
+- name: Include deploy finish hook
+  include_tasks: "{{ deploy_finish_hook }}"
+  when: deploy_finish_hook is defined

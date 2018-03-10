@@ -32,11 +32,18 @@ Example:
 deploy_dest: /var/www/project
 ```
 
-**deploy_hook** (type `string`, default `undefined`)
+**deploy_start_hook** (type `string`, default `undefined`)
 
 Example:
 ```yaml
-deploy_hook: /vagrant/automation/resources/hooks/deploy.yml
+deploy_start_hook: /vagrant/automation/resources/hooks/deploy.yml
+```
+
+**deploy_finish_hook** (type `string`, default `undefined`)
+
+Example:
+```yaml
+deploy_finish_hook: /vagrant/automation/resources/hooks/deploy.yml
 ```
 
 **deploy_composer_path** (type `string`, default `undefined`)
