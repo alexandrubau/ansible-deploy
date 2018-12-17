@@ -5,9 +5,7 @@
 
 - name: Install packages
   apt:
-    name: "{{ item }}"
-    state: latest
-  with_items: "{{ _deploy_packages }}"
+    name: "{{ _deploy_packages }}"
 
 - name: Clone repository
   git:
