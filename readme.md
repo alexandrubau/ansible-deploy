@@ -15,7 +15,7 @@ deploy_ssh_key: /vagrant/automation/resources/private/id_rsa
 
 Example:
 ```yaml
-deploy_git_ssh: git@github.com:user/project.git
+deploy_git_repo: git@github.com:user/project.git
 ```
 
 **deploy_version** (type `string`, default `master`)
