@@ -11,11 +11,11 @@
   git:
     repo: "{{ deploy_git_repo }}"
     dest: "{{ deploy_dest }}"
-    version: "{{ deploy_version }}"
-    key_file: "{{ deploy_ssh_key }}"
+    version: "{{ deploy_version | default(omit) }}"
+    key_file: "{{ deploy_ssh_key | default(omit) }}"
     accept_hostkey: true
     ssh_opts: "-o StrictHostKeyChecking=no"
-    force: yes
+    force: "{{ deploy_override | default(omit) }}"
 
 - name: Set config <core.fileMode> for repository
   git_config:

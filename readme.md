@@ -18,7 +18,7 @@ Example:
 deploy_git_repo: git@github.com:user/project.git
 ```
 
-**deploy_version** (type `string`, default `master`)
+**deploy_version** (type `string`, default `HEAD`)
 
 Example:
 ```yaml
@@ -30,6 +30,13 @@ deploy_version: v0.0.1
 Example:
 ```yaml
 deploy_dest: /var/www/project
+```
+
+**deploy_override** (type `bool`, default `false`)
+
+Example:
+```yaml
+deploy_override: yes
 ```
 
 **deploy_start_hook** (type `string`, default `undefined`)
