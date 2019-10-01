@@ -28,14 +28,13 @@
   stat:
     path: "{{ deploy_composer_packages_path }}"
   register: _deploy_composer_packages_path_info
-  when: deploy_composer_path is defined
+  when: _php_role is defined and deploy_composer_path is defined
 
 - name: Create composer packages directory
   file:
     path: "{{ deploy_composer_packages_path }}"
     state: directory
-    mode: 0777
-  when: deploy_composer_path is defined and not _deploy_composer_packages_path_info.stat.exists
+  when: _php_role is defined and deploy_composer_path is defined and not _deploy_composer_packages_path_info.stat.exists
 
 - name: Install composer packages
   composer:
@@ -43,26 +42,25 @@
     working_dir: "{{ deploy_composer_path | dirname }}"
     no_dev: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
   become: no
-  when: deploy_composer_path is defined and not _deploy_composer_packages_path_info.stat.exists
+  when: _php_role is defined and deploy_composer_path is defined and not _deploy_composer_packages_path_info.stat.exists
 
 - name: Check if npm packages directory exists
   stat:
     path: "{{ deploy_npm_packages_path }}"
   register: _deploy_npm_packages_path_info
-  when: deploy_npm_path is defined
+  when: _nodejs_role is defined and deploy_npm_path is defined
 
 - name: Create npm packages directory
   file:
     path: "{{ deploy_npm_packages_path }}"
     state: directory
-    mode: 0777
-  when: deploy_npm_path is defined and not _deploy_npm_packages_path_info.stat.exists
+  when: _nodejs_role is defined and deploy_npm_path is defined and not _deploy_npm_packages_path_info.stat.exists
 
 - name: Install npm packages
   npm:
     path: "{{ deploy_npm_path | dirname }}"
   become: no
-  when: deploy_npm_path is defined and not _deploy_npm_packages_path_info.stat.exists
+  when: _nodejs_role is defined and deploy_npm_path is defined and not _deploy_npm_packages_path_info.stat.exists
 
 - name: Include deploy finish hook
   include_tasks: "{{ deploy_finish_hook }}"
