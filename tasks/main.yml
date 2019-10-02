@@ -15,7 +15,7 @@
     key_file: "{{ deploy_ssh_key | default(omit) }}"
     accept_hostkey: true
     ssh_opts: "-o StrictHostKeyChecking=no"
-    force: "{{ deploy_override | default(omit) }}"
+    force: "{{ deploy_override | default('no') }}"
 
 - name: Set config <core.fileMode> for repository
   git_config:
