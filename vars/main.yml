@@ -2,3 +2,4 @@
 _deploy_role: ~
 _deploy_packages:
     - git
+    - unzip # recommended for composer
