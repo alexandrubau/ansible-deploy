@@ -66,3 +66,10 @@ Example:
 ```yaml
 deploy_npm_path: /vagrant/package.json
 ```
+
+**deploy_npm_ci** (type `bool`, default `false`)
+
+Example:
+```yaml
+deploy_npm_ci: yes
+```
