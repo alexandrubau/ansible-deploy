@@ -3,10 +3,6 @@
   include_tasks: "{{ deploy_start_hook }}"
   when: deploy_start_hook is defined
 
-- name: Install packages
-  apt:
-    name: "{{ _deploy_packages }}"
-
 - name: Clone repository
   git:
     repo: "{{ deploy_git_repo }}"
