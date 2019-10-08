@@ -16,7 +16,7 @@
 - name: Set config <core.fileMode> for repository
   git_config:
     name: core.fileMode
-    value: false
+    value: "false"
     scope: local
     repo: "{{ deploy_dest }}"
 
