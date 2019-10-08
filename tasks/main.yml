@@ -30,6 +30,7 @@
 - name: Install npm packages
   npm:
     path: "{{ deploy_npm_path | dirname }}"
+    production: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
   when: deploy_npm_path is defined
 
 - name: Include deploy finish hook
