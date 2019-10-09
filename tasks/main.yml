@@ -17,7 +17,7 @@
     accept_hostkey: true
     ssh_opts: "-o StrictHostKeyChecking=no"
     force: yes
-  when: "{{ deploy_override | default('no') or _output.matched == 0 }}"
+  when: deploy_override | default('no') or _output.matched == 0
 
 - name: Set config <core.fileMode> for repository
   git_config:
