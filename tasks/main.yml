@@ -27,12 +27,24 @@
     no_dev: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
   when: deploy_composer_path is defined
 
+# Can't use NPM module because it's unreliable
+# @see: https://github.com/ansible/ansible/issues/29234
+# @see: https://github.com/ansible/ansible/pull/63296
+
+# - name: Install npm packages
+#   npm:
+#     path: "{{ deploy_npm_path | dirname }}"
+#     ci: "{{ deploy_npm_ci | default('no') }}"
+#     production: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
+#   when: deploy_npm_path is defined
+
 - name: Install npm packages
-  npm:
-    path: "{{ deploy_npm_path | dirname }}"
-    ci: "{{ deploy_npm_ci | default('no') }}"
-    production: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
-  when: deploy_npm_path is defined
+  shell: >
+    cd {{ deploy_npm_path | dirname }};
+    npm {{ 'ci' if deploy_npm_ci is defined and deploy_npm_ci == true else 'install' }}
+    {{ '--production' if deploy_env == 'prod' else '' }}
+  register: _output
+  changed_when: "'added' in _output.stdout or 'updated' in _output.stdout"
 
 - name: Include deploy finish hook
   include_tasks: "{{ deploy_finish_hook }}"
