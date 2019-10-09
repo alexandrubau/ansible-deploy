@@ -3,6 +3,11 @@
   include_tasks: "{{ deploy_start_hook }}"
   when: deploy_start_hook is defined
 
+- name: Check if repository is already cloned
+  find:
+    paths: "{{ deploy_dest }}"
+  register: _output
+
 - name: Clone repository
   git:
     repo: "{{ deploy_git_repo }}"
@@ -11,7 +16,8 @@
     key_file: "{{ deploy_ssh_key | default(omit) }}"
     accept_hostkey: true
     ssh_opts: "-o StrictHostKeyChecking=no"
-    force: "{{ deploy_override | default('no') }}"
+    force: yes
+  when: "{{ deploy_override | default('no') or _output.matched == 0 }}"
 
 - name: Set config <core.fileMode> for repository
   git_config:
