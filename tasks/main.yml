@@ -1,47 +1,164 @@
 ---
-- name: Include deploy start hook
-  include_tasks: "{{ deploy_start_hook }}"
-  when: deploy_start_hook is defined
+### Initialize
+- name: Include initialize hook
+  include_tasks: "{{ deploy_hook_on_initialize }}"
+  when: deploy_hook_on_initialize|bool
 
 - name: Initialize
   deploy_helper:
     path: "{{ deploy_dest }}"
   when: deploy_history > 0
 
-- name: Get repository status
+- name: Ensure .ssh folder exists in user\'s home
+  file:
+    path: ~/.ssh
+    state: directory
+  when: deploy_ssh_key|bool
+
+- name: Copy ssh key for deploy
+  copy:
+    src: "{{ deploy_ssh_key }}"
+    dest: ~/.ssh/id_rsa
+    mode: 0600
+  when: deploy_ssh_key|bool
+
+### Update source
+- name: Include update_source hook
+  include_tasks: "{{ deploy_hook_on_update_source }}"
+  when: deploy_hook_on_update_source|bool
+
+- name: Get dest directory status
   find:
     paths: "{{ deploy_dest }}"
-  register: _output
+  register: _deploy_dest_status
   when: deploy_history == 0
 
-- name: Clone repository
+- name: Clone project files
   git:
     repo: "{{ deploy_git_repo }}"
-    dest: "{{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }}" #"{% if deploy_history > 0 %}{{ deploy_helper.new_release_path }}{% else %}{{ deploy_dest }}{% endif %}"
-    version: "{{ deploy_git_version | default(omit) }}"
-    key_file: "{{ deploy_ssh_key | default(omit) }}"
-    accept_hostkey: true
+    dest: "{{ deploy_dest ~ '/source' if deploy_history > 0 else deploy_dest }}"
+    version: "{{ deploy_git_version }}"
     ssh_opts: "-o StrictHostKeyChecking=no"
-  when: deploy_history > 0 or _output.matched == 0
-
-- name: Create unfinished file
-  file:
-    path: '{{ deploy_helper.new_release_path }}/{{ deploy_helper.unfinished_filename }}'
-    state: touch
-  when: deploy_history > 0
+    accept_hostkey: true
+  when: deploy_history > 0 or _deploy_dest_status.matched == 0
 
 - name: Set config <core.fileMode> for repository
   git_config:
     name: core.fileMode
     value: "false"
     scope: local
-    repo: "{{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }}"
-  when: deploy_git_filemode | default(true)
+    repo: "{{ deploy_dest ~ '/source' if deploy_history > 0 else deploy_dest }}"
+  when: deploy_git_filemode
+
+### Create build dir
+- name: Include create_build_dir hook
+  include_tasks: "{{ deploy_hook_on_create_build_dir }}"
+  when: deploy_hook_on_create_build_dir|bool
+
+- name: Copy files to new build dir
+  shell: cp -prT {{ deploy_dest ~ '/source' }} {{ deploy_helper.new_release_path }}
+  when: deploy_history > 0
+
+- name: Create unfinished file
+  file:
+    path: "{{ deploy_helper.new_release_path }}/{{ deploy_helper.unfinished_filename }}"
+    state: touch
+  when: deploy_history > 0
+
+- name: Remove unwanted files/folders from new release
+  file: 
+    path: "{{ deploy_helper.new_release_path ~ '/' ~ item if deploy_history > 0 else deploy_dest ~ '/' ~ item }}"
+    state: absent
+  with_items: "{{ deploy_unwanted }}"
+
+- name: Copy project files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ deploy_helper.new_release_path }}/{{ item.dest }}"
+    mode: "{{ item.mode|default(omit) }}"
+  with_items: "{{ deploy_files }}"
+
+- name: Copy project templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ deploy_helper.new_release_path ~ '/' ~ item.dest if deploy_history > 0 else deploy_dest ~ '/' ~ item.dest }}"
+    mode: "{{ item.mode|default(omit) }}"
+  with_items: "{{ deploy_templates }}"
+
+### Build
+- name: Include on_build hook
+  include_tasks: "{{ deploy_hook_on_build }}"
+  when: deploy_hook_on_build|bool
+
+- name: Run pre_build_commands in the new_release_path
+  shell: "{{ item }}"
+  args:
+    chdir: "{{ deploy_helper.new_release_path }}"
+  environment: "{{ deploy_environment }}"
+  with_items: "{{ deploy_pre_build_commands }}"
+
+- name: Check if composer\'s vendor dir exists
+  stat:
+    path: "{{ deploy_helper.current_path }}/vendor"
+  register: _deploy_check_composer_vendor_dir
+  when: deploy_composer_install and deploy_history > 0
+
+- name: Copy composer\'s vendor dir if exists to speed up install
+  copy:
+    src: "{{ deploy_helper.current_path }}/vendor"
+    dest: "{{ deploy_helper.new_release_path }}/vendor"
+  when: deploy_composer_install and deploy_history > 0 and _deploy_check_composer_vendor_dir.stat.exists
+
+- name: Install composer packages
+  composer:
+    command: install
+    working_dir: "{{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }}"
+    no_dev: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
+  environment: "{{ deploy_environment }}"
+  when: deploy_composer_install
+
+- name: Check if npm\'s modules dir exists
+  stat:
+    path: "{{ deploy_helper.current_path }}/node_modules"
+  register: _deploy_check_npm_modules_dir
+  when: deploy_npm_install and deploy_history > 0
+
+- name: Copy npm\'s modules dir if exists to speed up install
+  copy:
+    src: "{{ deploy_helper.current_path }}/node_modules"
+    dest: "{{ deploy_helper.new_release_path }}/node_modules"
+  environment: "{{ deploy_environment }}"
+  when: deploy_npm_install and deploy_history > 0 and _deploy_check_npm_modules_dir.stat.exists
+
+# Can't use Ansible's NPM module because it's unreliable
+# @see: https://github.com/ansible/ansible/issues/29234
+# @see: https://github.com/ansible/ansible/pull/63296
+- name: Install npm packages
+  shell: >
+    cd {{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }};
+    npm {{ 'ci' if deploy_npm_ci else 'install' }}
+    {{ '--production' if deploy_env == 'prod' else '' }}
+  register: _deploy_npm_output
+  changed_when: "'added' in _deploy_npm_output.stdout or 'updated' in _deploy_npm_output.stdout"
+  when: deploy_npm_install
+
+### Make shared resources
+- name: Include make_shared_resources hook
+  include_tasks: "{{ deploy_hook_on_make_shared_resources }}"
+  when: deploy_hook_on_make_shared_resources|bool
 
 - name: Ensure shared sources are present
   file:
     path: "{{ deploy_helper.shared_path }}/{{ item.src }}"
-    state: 'directory'
+    state: directory
+  with_items: "{{ deploy_share }}"
+  when: deploy_history > 0
+
+- name: Ensure directories for shared paths to go into are present
+  file: 
+    path: "{{ deploy_helper.new_release_path ~ '/' ~ item.path|dirname }}"
+    state: directory
+    recurse: yes
   with_items: "{{ deploy_share }}"
   when: deploy_history > 0
 
@@ -56,30 +173,23 @@
   file:
     path: "{{ deploy_helper.new_release_path }}/{{ item.path }}"
     src: "{{ deploy_helper.shared_path }}/{{ item.src }}"
-    state: 'link'
+    state: link
   with_items: "{{ deploy_share }}"
   when: deploy_history > 0
 
-- name: Install composer packages
-  composer:
-    command: install
-    working_dir: "{{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }}"
-    no_dev: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
-  when: deploy_composer_install is defined and deploy_composer_install == true
+### Finalize
+- name: Include finalize hook
+  include_tasks: "{{ deploy_hook_on_finalize }}"
+  when: deploy_hook_on_finalize|bool
 
-# Can't use Ansible's NPM module because it's unreliable
-# @see: https://github.com/ansible/ansible/issues/29234
-# @see: https://github.com/ansible/ansible/pull/63296
-- name: Install npm packages
-  shell: >
-    cd {{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }};
-    npm {{ 'ci' if deploy_npm_ci is defined and deploy_npm_ci == true else 'install' }}
-    {{ '--production' if deploy_env == 'prod' else '' }}
-  register: _output
-  changed_when: "'added' in _output.stdout or 'updated' in _output.stdout"
-  when: deploy_npm_install is defined and deploy_npm_install == true
+- name: Run post_build_commands in the new_release_path
+  shell: "{{ item }}"
+  args:
+    chdir: "{{ deploy_helper.new_release_path }}"
+  environment: "{{ deploy_environment }}"
+  with_items: "{{ deploy_post_build_commands }}"
 
-- name: Cleanup directory structure
+- name: Finalize the deploy
   deploy_helper:
     path: "{{ deploy_dest }}"
     release: "{{ deploy_helper.new_release_path }}"
@@ -88,6 +198,7 @@
     state: finalize
   when: deploy_history > 0
 
-- name: Include deploy finish hook
-  include_tasks: "{{ deploy_finish_hook }}"
-  when: deploy_finish_hook is defined
+### Running post finalize routines
+- name: Include finalize hook
+  include_tasks: "{{ deploy_hook_on_complete }}"
+  when: deploy_hook_on_complete|bool
