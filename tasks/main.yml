@@ -2,7 +2,7 @@
 ### Initialize
 - name: Include initialize hook
   include_tasks: "{{ deploy_hook_on_initialize }}"
-  when: deploy_hook_on_initialize|bool
+  when: deploy_hook_on_initialize is defined
 
 - name: Initialize
   deploy_helper:
@@ -13,19 +13,19 @@
   file:
     path: ~/.ssh
     state: directory
-  when: deploy_ssh_key|bool
+  when: deploy_ssh_key is defined
 
 - name: Copy ssh key for deploy
   copy:
     src: "{{ deploy_ssh_key }}"
     dest: ~/.ssh/id_rsa
     mode: 0600
-  when: deploy_ssh_key|bool
+  when: deploy_ssh_key is defined
 
 ### Update source
 - name: Include update_source hook
   include_tasks: "{{ deploy_hook_on_update_source }}"
-  when: deploy_hook_on_update_source|bool
+  when: deploy_hook_on_update_source is defined
 
 - name: Get dest directory status
   find:
@@ -53,7 +53,7 @@
 ### Create build dir
 - name: Include create_build_dir hook
   include_tasks: "{{ deploy_hook_on_create_build_dir }}"
-  when: deploy_hook_on_create_build_dir|bool
+  when: deploy_hook_on_create_build_dir is defined
 
 - name: Copy files to new build dir
   shell: cp -prT {{ deploy_dest ~ '/source' }} {{ deploy_helper.new_release_path }}
@@ -88,13 +88,13 @@
 ### Build
 - name: Include on_build hook
   include_tasks: "{{ deploy_hook_on_build }}"
-  when: deploy_hook_on_build|bool
+  when: deploy_hook_on_build is defined
 
 - name: Run pre_build_commands in the new_release_path
   shell: "{{ item }}"
   args:
     chdir: "{{ deploy_helper.new_release_path }}"
-  environment: "{{ deploy_environment }}"
+  environment: "{{ deploy_env_vars }}"
   with_items: "{{ deploy_pre_build_commands }}"
 
 - name: Check if composer\'s vendor dir exists
@@ -114,7 +114,7 @@
     command: install
     working_dir: "{{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }}"
     no_dev: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
-  environment: "{{ deploy_environment }}"
+  environment: "{{ deploy_env_vars }}"
   when: deploy_composer_install
 
 - name: Check if npm\'s modules dir exists
@@ -127,7 +127,7 @@
   copy:
     src: "{{ deploy_helper.current_path }}/node_modules"
     dest: "{{ deploy_helper.new_release_path }}/node_modules"
-  environment: "{{ deploy_environment }}"
+  environment: "{{ deploy_env_vars }}"
   when: deploy_npm_install and deploy_history > 0 and _deploy_check_npm_modules_dir.stat.exists
 
 # Can't use Ansible's NPM module because it's unreliable
@@ -145,7 +145,7 @@
 ### Make shared resources
 - name: Include make_shared_resources hook
   include_tasks: "{{ deploy_hook_on_make_shared_resources }}"
-  when: deploy_hook_on_make_shared_resources|bool
+  when: deploy_hook_on_make_shared_resources is defined
 
 - name: Ensure shared sources are present
   file:
@@ -180,13 +180,13 @@
 ### Finalize
 - name: Include finalize hook
   include_tasks: "{{ deploy_hook_on_finalize }}"
-  when: deploy_hook_on_finalize|bool
+  when: deploy_hook_on_finalize is defined
 
 - name: Run post_build_commands in the new_release_path
   shell: "{{ item }}"
   args:
     chdir: "{{ deploy_helper.new_release_path }}"
-  environment: "{{ deploy_environment }}"
+  environment: "{{ deploy_env_vars }}"
   with_items: "{{ deploy_post_build_commands }}"
 
 - name: Finalize the deploy
@@ -201,4 +201,4 @@
 ### Running post finalize routines
 - name: Include finalize hook
   include_tasks: "{{ deploy_hook_on_complete }}"
-  when: deploy_hook_on_complete|bool
+  when: deploy_hook_on_complete is defined

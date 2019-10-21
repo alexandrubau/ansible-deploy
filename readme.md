@@ -13,6 +13,14 @@ Example:
 deploy_env: prod
 ```
 
+**deploy_env_vars** (type `object`, default `{}`)
+
+Example:
+```yaml
+deploy_env_vars:
+  NODE_ENV: production
+```
+
 **deploy_dest** (type `string`, default `undefined`)
 
 Example:
@@ -20,7 +28,7 @@ Example:
 deploy_dest: /var/www/project
 ```
 
-**deploy_ssh_key** (type `string`, default `null`)
+**deploy_ssh_key** (type `string`, default `undefined`)
 
 Example:
 ```yaml
@@ -38,7 +46,7 @@ deploy_git_repo: git@github.com:user/project.git
 
 Example:
 ```yaml
-deploy_git_version: v0.0.1
+deploy_git_version: latest
 ```
 
 **deploy_git_filemode** (type `bool`, default `true`)
@@ -62,14 +70,6 @@ Example:
 ```yaml
 deploy_post_build_commands:
   - /bin/command
-```
-
-**deploy_environment** (type `object`, default `{}`)
-
-Example:
-```yaml
-deploy_environment:
-  NODE_ENV: production
 ```
 
 **deploy_unwanted** (type `array`, default `[]`)
@@ -143,49 +143,49 @@ Example:
 deploy_npm_ci: yes
 ```
 
-**deploy_hook_on_initialize** (type `string`, default `null`)
+**deploy_hook_on_initialize** (type `string`, default `undefined`)
 
 Example:
 ```yaml
 deploy_hook_on_initialize: /vagrant/automation/resources/hooks/initialize.yml
 ```
 
-**deploy_hook_on_update_source** (type `string`, default `null`)
+**deploy_hook_on_update_source** (type `string`, default `undefined`)
 
 Example:
 ```yaml
 deploy_hook_on_update_source: /vagrant/automation/resources/hooks/update-source.yml
 ```
 
-**deploy_hook_on_create_build_dir** (type `string`, default `null`)
+**deploy_hook_on_create_build_dir** (type `string`, default `undefined`)
 
 Example:
 ```yaml
 deploy_hook_on_create_build_dir: /vagrant/automation/resources/hooks/create-build-dir.yml
 ```
 
-**deploy_hook_on_build** (type `string`, default `null`)
+**deploy_hook_on_build** (type `string`, default `undefined`)
 
 Example:
 ```yaml
 deploy_hook_on_build: /vagrant/automation/resources/hooks/build.yml
 ```
 
-**deploy_hook_on_make_shared_resources** (type `string`, default `null`)
+**deploy_hook_on_make_shared_resources** (type `string`, default `undefined`)
 
 Example:
 ```yaml
 deploy_hook_on_make_shared_resources: /vagrant/automation/resources/hooks/make-shared-resources.yml
 ```
 
-**deploy_hook_on_finalize** (type `string`, default `null`)
+**deploy_hook_on_finalize** (type `string`, default `undefined`)
 
 Example:
 ```yaml
 deploy_hook_on_finalize: /vagrant/automation/resources/hooks/finalize.yml
 ```
 
-**deploy_hook_on_complete** (type `string`, default `null`)
+**deploy_hook_on_complete** (type `string`, default `undefined`)
 
 Example:
 ```yaml

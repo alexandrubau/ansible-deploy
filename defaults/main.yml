@@ -1,13 +1,13 @@
 ---
 deploy_env: dev
+deploy_env_vars: {}
 # deploy_dest
-deploy_ssh_key: ~
+# deploy_ssh_key: ~
 # deploy_git_repo
 deploy_git_version: master
 deploy_git_filemode: yes
 deploy_pre_build_commands: []
 deploy_post_build_commands: []
-deploy_environment: {}
 deploy_unwanted: []
 deploy_files: []
 deploy_templates: []
@@ -16,10 +16,10 @@ deploy_share: []
 deploy_composer_install: no
 deploy_npm_install: no
 deploy_npm_ci: no
-deploy_hook_on_initialize: ~
-deploy_hook_on_update_source: ~
-deploy_hook_on_create_build_dir: ~
-deploy_hook_on_build: ~
-deploy_hook_on_make_shared_resources: ~
-deploy_hook_on_finalize: ~
-deploy_hook_on_complete: ~
+# deploy_hook_on_initialize: ~
+# deploy_hook_on_update_source: ~
+# deploy_hook_on_create_build_dir: ~
+# deploy_hook_on_build: ~
+# deploy_hook_on_make_shared_resources: ~
+# deploy_hook_on_finalize: ~
+# deploy_hook_on_complete: ~
