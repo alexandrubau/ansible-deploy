@@ -101,13 +101,20 @@
   stat:
     path: "{{ deploy_helper.current_path }}/vendor"
   register: _deploy_check_composer_vendor_dir
-  when: _php_role is defined and deploy_composer_install and deploy_history > 0
+  when:
+    - _php_role is defined
+    - deploy_composer_install
+    - deploy_history > 0
 
 - name: Copy composer\'s vendor dir if exists to speed up install
   copy:
     src: "{{ deploy_helper.current_path }}/vendor"
     dest: "{{ deploy_helper.new_release_path }}/vendor"
-  when: _php_role is defined and deploy_composer_install and deploy_history > 0 and _deploy_check_composer_vendor_dir.stat.exists
+  when:
+    - _php_role is defined
+    - deploy_composer_install
+    - deploy_history > 0
+    - _deploy_check_composer_vendor_dir.stat.exists
 
 - name: Install composer packages
   composer:
@@ -115,20 +122,29 @@
     working_dir: "{{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }}"
     no_dev: "{{ 'yes' if deploy_env == 'prod' else 'no' }}"
   environment: "{{ deploy_env_vars }}"
-  when: _php_role is defined and deploy_composer_install
+  when:
+    - _php_role is defined
+    - deploy_composer_install
 
 - name: Check if npm\'s modules dir exists
   stat:
     path: "{{ deploy_helper.current_path }}/node_modules"
   register: _deploy_check_npm_modules_dir
-  when: _nodejs_role is defined and deploy_npm_install and deploy_history > 0
+  when:
+    - _nodejs_role is defined
+    - deploy_npm_install
+    - deploy_history > 0
 
 - name: Copy npm\'s modules dir if exists to speed up install
   copy:
     src: "{{ deploy_helper.current_path }}/node_modules"
     dest: "{{ deploy_helper.new_release_path }}/node_modules"
   environment: "{{ deploy_env_vars }}"
-  when: _nodejs_role is defined and deploy_npm_install and deploy_history > 0 and _deploy_check_npm_modules_dir.stat.exists
+  when:
+    - _nodejs_role is defined
+    - deploy_npm_install
+    - deploy_history > 0
+    - _deploy_check_npm_modules_dir.stat.exists
 
 # Can't use Ansible's NPM module because it's unreliable
 # @see: https://github.com/ansible/ansible/issues/29234
@@ -140,7 +156,9 @@
     {{ '--production' if deploy_env == 'prod' else '' }}
   register: _deploy_npm_output
   changed_when: "'added' in _deploy_npm_output.stdout or 'updated' in _deploy_npm_output.stdout"
-  when: _nodejs_role is defined and deploy_npm_install
+  when:
+    - _nodejs_role is defined
+    - deploy_npm_install
 
 ### Make shared resources
 - name: Include make_shared_resources hook
