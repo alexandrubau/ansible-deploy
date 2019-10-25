@@ -150,7 +150,7 @@
 # @see: https://github.com/ansible/ansible/issues/29234
 # @see: https://github.com/ansible/ansible/pull/63296
 - name: Install npm packages
-  shell: >
+  shell: >-
     cd {{ deploy_helper.new_release_path if deploy_history > 0 else deploy_dest }};
     npm {{ 'ci' if deploy_npm_ci else 'install' }}
     {{ '--production' if deploy_env == 'prod' else '' }}
