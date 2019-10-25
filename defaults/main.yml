@@ -1,9 +1,9 @@
 ---
 deploy_env: dev
 deploy_env_vars: {}
-# deploy_dest
+# deploy_dest: ~
 # deploy_ssh_key: ~
-# deploy_git_repo
+# deploy_git_repo: ~
 deploy_git_version: master
 deploy_git_filemode: yes
 deploy_pre_build_commands: []
